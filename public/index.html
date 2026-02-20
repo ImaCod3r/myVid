@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>myVid — YouTube Downloader</title>
+  <meta name="description" content="Baixe vídeos e áudios do YouTube de forma rápida e gratuita com o myVid." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:  '#fff1f1',
+              100: '#ffe1e1',
+              200: '#ffc7c7',
+              300: '#ffa0a0',
+              400: '#ff6b6b',
+              500: '#ff3b3b',
+              600: '#ed1515',
+              700: '#c80d0d',
+              800: '#a50f0f',
+              900: '#881414',
+            },
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.4s ease both',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff3b3b 0%, #c80d0d 100%);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(255,59,59,0.3);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(255,59,59,0.45);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input-field {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(255,59,59,0.6);
+      box-shadow: 0 0 0 3px rgba(255,59,59,0.15);
+    }
+
+    .select-field {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23999'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 18px;
+    }
+    .select-field:focus {
+      outline: none;
+      border-color: rgba(255,59,59,0.6);
+      box-shadow: 0 0 0 3px rgba(255,59,59,0.15);
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, #ff3b3b, #ff6b6b);
+      animation: progress-anim 2s ease-in-out infinite;
+    }
+    @keyframes progress-anim {
+      0%   { width: 5%; }
+      50%  { width: 85%; }
+      100% { width: 5%; }
+    }
+
+    /* Glow radial no bg */
+    .bg-glow {
+      background-image:
+        radial-gradient(ellipse 60% 40% at 70% 20%, rgba(255,59,59,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 20% 80%, rgba(200,13,13,0.08) 0%, transparent 60%);
+    }
+
+    #preview-card { display: none; }
+    #preview-card.visible { display: block; }
+
+    .tag {
+      background: rgba(255,59,59,0.15);
+      border: 1px solid rgba(255,59,59,0.25);
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-zinc-950 text-zinc-100 bg-glow">
+
+  <!-- Header -->
+  <header class="border-b border-white/5 glass sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl btn-primary flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34l-.01-8.8a8.18 8.18 0 0 0 4.78 1.52V4.57a4.85 4.85 0 0 1-1-.11z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-none">myVid</h1>
+        <p class="text-zinc-500 text-xs mt-0.5">YouTube Downloader</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Hero -->
+    <div class="text-center mb-12 animate-fade-up">
+      <div class="inline-flex items-center gap-2 tag rounded-full px-4 py-1.5 text-sm font-medium mb-5">
+        <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse-slow inline-block"></span>
+        Baixe vídeos e áudios facilmente
+      </div>
+      <h2 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+        O melhor do YouTube,<br/>
+        <span class="bg-gradient-to-r from-brand-400 to-brand-600 bg-clip-text text-transparent">direto para você.</span>
+      </h2>
+      <p class="text-zinc-400 text-lg max-w-xl mx-auto">
+        Cole o link, escolha a qualidade e baixe. Simples assim.
+      </p>
+    </div>
+
+    <!-- Search card -->
+    <div class="glass rounded-2xl p-6 md:p-8 mb-6 animate-fade-up" style="animation-delay:0.1s">
+      <form id="info-form" class="space-y-5">
+
+        <!-- URL input -->
+        <div>
+          <label for="url-input" class="block text-sm font-medium text-zinc-300 mb-2">
+            URL do vídeo
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+            </span>
+            <input
+              id="url-input"
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              class="input-field w-full rounded-xl pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder-zinc-600"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+        </div>
+
+        <!-- Selectors row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Format select -->
+          <div>
+            <label for="format-select" class="block text-sm font-medium text-zinc-300 mb-2">Formato</label>
+            <select
+              id="format-select"
+              class="select-field w-full rounded-xl px-4 py-3.5 text-sm text-zinc-100 pr-10">
+              <option value="video">🎬 Vídeo (MP4)</option>
+              <option value="audio">🎵 Áudio (MP3)</option>
+            </select>
+          </div>
+
+          <!-- Quality select -->
+          <div id="quality-wrapper">
+            <label for="quality-select" class="block text-sm font-medium text-zinc-300 mb-2">Resolução</label>
+            <select
+              id="quality-select"
+              class="select-field w-full rounded-xl px-4 py-3.5 text-sm text-zinc-100 pr-10 opacity-40"
+              disabled>
+              <option value="">— Carregue um link primeiro —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Load info button -->
+        <button
+          id="info-btn"
+          type="submit"
+          class="btn-primary w-full rounded-xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Carregar informações
+        </button>
+
+        <!-- Error banner -->
+        <div id="error-banner" class="hidden rounded-xl bg-brand-900/40 border border-brand-700/50 p-4 text-sm text-brand-300 flex items-start gap-3">
+          <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <span id="error-text"></span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Preview card -->
+    <div id="preview-card" class="glass rounded-2xl overflow-hidden animate-fade-up mb-6">
+      <!-- Thumbnail area -->
+      <div class="relative">
+        <img
+          id="thumb-img"
+          src=""
+          alt="Thumbnail do vídeo"
+          class="w-full object-cover"
+          style="max-height: 280px;"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent"></div>
+        <span id="thumb-duration" class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded-md"></span>
+      </div>
+
+      <!-- Info -->
+      <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+        <div class="min-w-0">
+          <p id="thumb-title" class="font-semibold text-base text-zinc-100 line-clamp-2 leading-snug"></p>
+          <p id="thumb-uploader" class="text-zinc-500 text-sm mt-1"></p>
+        </div>
+
+        <!-- Download button -->
+        <button
+          id="download-btn"
+          class="btn-primary flex-shrink-0 rounded-xl px-6 py-3 text-sm font-semibold text-white flex items-center gap-2 min-w-[150px] justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span id="download-btn-text">Baixar</span>
+        </button>
+      </div>
+
+      <!-- Progress bar (hidden by default) -->
+      <div id="progress-wrapper" class="hidden px-6 pb-5">
+        <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+          <div class="progress-bar h-1.5 rounded-full"></div>
+        </div>
+        <p class="text-zinc-500 text-xs mt-2 text-center" id="progress-label">Preparando o download...</p>
+      </div>
+    </div>
+
+    <!-- Feature pills -->
+    <div class="flex flex-wrap gap-3 justify-center animate-fade-up" style="animation-delay:0.2s">
+      <div class="flex items-center gap-2 glass rounded-full px-4 py-2 text-xs text-zinc-400">
+        <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        Sem salvar em disco
+      </div>
+      <div class="flex items-center gap-2 glass rounded-full px-4 py-2 text-xs text-zinc-400">
+        <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        MP4 e MP3
+      </div>
+      <div class="flex items-center gap-2 glass rounded-full px-4 py-2 text-xs text-zinc-400">
+        <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        Até 4K
+      </div>
+      <div class="flex items-center gap-2 glass rounded-full px-4 py-2 text-xs text-zinc-400">
+        <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        Powered by yt-dlp
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 mt-16 py-8 text-center text-zinc-600 text-sm">
+    <p>myVid &mdash; Use com responsabilidade. Respeite os direitos autorais.</p>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
