@@ -39,13 +39,8 @@ function hideError() {
 function setInfoLoading(loading) {
   infoBtn.disabled = loading;
   infoBtn.innerHTML = loading
-    ? `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-       </svg> Carregando...`
-    : `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-       </svg> Carregar informações`;
+    ? `<ion-icon name="sync-outline" class="animate-spin text-lg"></ion-icon> Carregando...`
+    : `<ion-icon name="search-outline" class="text-lg"></ion-icon> Carregar informações`;
 }
 
 function setDownloadLoading(loading) {
@@ -59,37 +54,98 @@ function setDownloadLoading(loading) {
   }
 }
 
+// ─── Custom Dropdowns ──────────────────────────────────────────────────────────
+
+function initCustomDropdown(dropdownId, onChange) {
+  const container = document.getElementById(dropdownId);
+  if (!container) return;
+
+  const selected = container.querySelector(".custom-dropdown-selected");
+  const optionsContainer = container.querySelector(".custom-dropdown-options");
+  const hiddenInput = container.querySelector("input[type='hidden']");
+  const selectedText = container.querySelector(".selected-text");
+
+  selected.addEventListener("click", (e) => {
+    e.stopPropagation();
+    // Fecha outros dropdowns
+    document.querySelectorAll(".custom-dropdown").forEach((d) => {
+      if (d !== container) d.classList.remove("active");
+    });
+    container.classList.toggle("active");
+  });
+
+  optionsContainer.addEventListener("click", (e) => {
+    const option = e.target.closest(".custom-dropdown-option");
+    if (!option) return;
+
+    const value = option.dataset.value;
+    const text = option.textContent;
+
+    hiddenInput.value = value;
+    selectedText.textContent = text;
+
+    container
+      .querySelectorAll(".custom-dropdown-option")
+      .forEach((opt) => opt.classList.remove("selected"));
+    option.classList.add("selected");
+
+    container.classList.remove("active");
+    if (onChange) onChange(value);
+  });
+}
+
+// Fecha dropdowns ao clicar fora
+document.addEventListener("click", () => {
+  document
+    .querySelectorAll(".custom-dropdown")
+    .forEach((d) => d.classList.remove("active"));
+});
+
+initCustomDropdown("dropdown-format", (val) => {
+  if (!currentInfo) return;
+  populateQualities(currentInfo.videoFormats, currentInfo.audioFormats, val);
+});
+initCustomDropdown("dropdown-quality");
+
 function populateQualities(videoFormats, audioFormats, selectedFormat) {
-  qualitySelect.innerHTML = "";
+  const container = document.getElementById("dropdown-quality");
+  const optionsContainer = container.querySelector(".custom-dropdown-options");
+  const selectedText = container.querySelector(".selected-text");
+  const hiddenInput = container.querySelector("input[type='hidden']");
+
+  optionsContainer.innerHTML = "";
 
   if (selectedFormat === "audio") {
     qualityWrapper.style.opacity = "0.4";
-    qualitySelect.disabled = true;
-    const opt = document.createElement("option");
-    opt.value = "best";
-    opt.textContent = "Melhor qualidade (automático)";
-    qualitySelect.appendChild(opt);
+    qualityWrapper.style.pointerEvents = "none";
+    hiddenInput.value = "best";
+    selectedText.textContent = "Melhor qualidade (automático)";
     return;
   }
 
   // Formato vídeo
   qualityWrapper.style.opacity = "1";
-  qualitySelect.disabled = false;
+  qualityWrapper.style.pointerEvents = "auto";
 
   if (videoFormats.length === 0) {
-    qualitySelect.disabled = true;
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "— Nenhuma resolução disponível —";
-    qualitySelect.appendChild(opt);
+    qualityWrapper.style.opacity = "0.4";
+    qualityWrapper.style.pointerEvents = "none";
+    hiddenInput.value = "";
+    selectedText.textContent = "— Nenhuma resolução disponível —";
     return;
   }
 
-  videoFormats.forEach((f) => {
-    const opt = document.createElement("option");
-    opt.value = f.height;
-    opt.textContent = f.label;
-    qualitySelect.appendChild(opt);
+  videoFormats.forEach((f, idx) => {
+    const div = document.createElement("div");
+    div.className = "custom-dropdown-option";
+    if (idx === 0) {
+      div.classList.add("selected");
+      hiddenInput.value = f.height;
+      selectedText.textContent = f.label;
+    }
+    div.dataset.value = f.height;
+    div.textContent = f.label;
+    optionsContainer.appendChild(div);
   });
 }
 
@@ -138,17 +194,6 @@ infoForm.addEventListener("submit", async (e) => {
   } finally {
     setInfoLoading(false);
   }
-});
-
-// ─── Atualizar qualidades ao mudar formato ────────────────────────────────────
-
-formatSelect.addEventListener("change", () => {
-  if (!currentInfo) return;
-  populateQualities(
-    currentInfo.videoFormats,
-    currentInfo.audioFormats,
-    formatSelect.value,
-  );
 });
 
 // ─── Download via blob/anchor trick ──────────────────────────────────────────

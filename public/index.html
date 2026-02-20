@@ -86,19 +86,116 @@
     }
 
     .select-field {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23999'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 18px;
+      background-position: right 16px center;
+      background-size: 14px;
+      cursor: pointer;
+    }
+    .select-field:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,59,59,0.3);
     }
     .select-field:focus {
       outline: none;
-      border-color: rgba(255,59,59,0.6);
-      box-shadow: 0 0 0 3px rgba(255,59,59,0.15);
+      border-color: rgba(255,59,59,0.5);
+      box-shadow: 0 0 0 4px rgba(255,59,59,0.1);
+      background: rgba(255,255,255,0.08);
+    }
+    .select-field option {
+      background: #09090b;
+      color: #fafafa;
+      padding: 12px;
+    }
+
+    /* Custom Dropdown Styling */
+    .custom-dropdown {
+      position: relative;
+      user-select: none;
+      z-index: 10;
+    }
+    .custom-dropdown.active {
+      z-index: 60;
+    }
+    .custom-dropdown-selected {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0.75rem;
+      padding: 0.875rem 1rem 0.875rem 3rem;
+      font-size: 0.875rem;
+      color: #f4f4f5;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .custom-dropdown-selected:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,59,59,0.3);
+    }
+    .custom-dropdown.active .custom-dropdown-selected {
+      border-color: rgba(255,59,59,0.5);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 0 4px rgba(255,59,59,0.1);
+    }
+    .custom-dropdown-options {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #09090b;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.75rem;
+      overflow-y: auto;
+      max-height: 250px;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .custom-dropdown.active .custom-dropdown-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .custom-dropdown-option {
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .custom-dropdown-option:hover {
+      background: rgba(255,59,59,0.1);
+      color: #fff;
+    }
+    .custom-dropdown-option.selected {
+      background: rgba(255,59,59,0.15);
+      color: #ff6b6b;
+      font-weight: 600;
+    }
+    .custom-dropdown-arrow {
+      transition: transform 0.3s ease;
+      color: #666;
+    }
+    .custom-dropdown.active .custom-dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    .custom-dropdown-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.25rem;
+      color: #71717a;
+      pointer-events: none;
     }
 
     .progress-bar {
@@ -125,6 +222,16 @@
       background: rgba(255,59,59,0.15);
       border: 1px solid rgba(255,59,59,0.25);
       color: #ff6b6b;
+    }
+
+    /* Fix stacking order of main sections */
+    #info-form-container {
+      position: relative;
+      z-index: 30;
+    }
+    #preview-card {
+      position: relative;
+      z-index: 10;
     }
   </style>
 </head>
@@ -162,7 +269,7 @@
     </div>
 
     <!-- Search card -->
-    <div class="glass rounded-2xl p-6 md:p-8 mb-6 animate-fade-up" style="animation-delay:0.1s">
+    <div id="info-form-container" class="glass rounded-2xl p-6 md:p-8 mb-6 animate-fade-up" style="animation-delay:0.1s">
       <form id="info-form" class="space-y-5">
 
         <!-- URL input -->
@@ -189,24 +296,35 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- Format select -->
           <div>
-            <label for="format-select" class="block text-sm font-medium text-zinc-300 mb-2">Formato</label>
-            <select
-              id="format-select"
-              class="select-field w-full rounded-xl px-4 py-3.5 text-sm text-zinc-100 pr-10">
-              <option value="video">🎬 Vídeo (MP4)</option>
-              <option value="audio">🎵 Áudio (MP3)</option>
-            </select>
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Formato</label>
+            <div class="custom-dropdown" id="dropdown-format">
+              <input type="hidden" id="format-select" value="video">
+              <div class="custom-dropdown-selected">
+                <ion-icon name="options-outline" class="custom-dropdown-icon"></ion-icon>
+                <span class="selected-text">Vídeo (MP4)</span>
+                <ion-icon name="chevron-down-outline" class="custom-dropdown-arrow"></ion-icon>
+              </div>
+              <div class="custom-dropdown-options">
+                <div class="custom-dropdown-option selected" data-value="video">Vídeo (MP4)</div>
+                <div class="custom-dropdown-option" data-value="audio">Áudio (MP3)</div>
+              </div>
+            </div>
           </div>
 
           <!-- Quality select -->
-          <div id="quality-wrapper">
-            <label for="quality-select" class="block text-sm font-medium text-zinc-300 mb-2">Resolução</label>
-            <select
-              id="quality-select"
-              class="select-field w-full rounded-xl px-4 py-3.5 text-sm text-zinc-100 pr-10 opacity-40"
-              disabled>
-              <option value="">— Carregue um link primeiro —</option>
-            </select>
+          <div id="quality-wrapper" style="opacity: 0.4; pointer-events: none;">
+            <label class="block text-sm font-medium text-zinc-300 mb-2">Resolução</label>
+            <div class="custom-dropdown" id="dropdown-quality">
+              <input type="hidden" id="quality-select" value="">
+              <div class="custom-dropdown-selected">
+                <ion-icon name="layers-outline" class="custom-dropdown-icon"></ion-icon>
+                <span class="selected-text">— Carregue um link primeiro —</span>
+                <ion-icon name="chevron-down-outline" class="custom-dropdown-arrow"></ion-icon>
+              </div>
+              <div class="custom-dropdown-options">
+                <!-- Populadas via JS -->
+              </div>
+            </div>
           </div>
         </div>
 
