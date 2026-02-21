@@ -1,11 +1,17 @@
 import YTDlpWrapModule from "yt-dlp-wrap";
 import ffmpeg from "ffmpeg-static";
+import fs from "fs";
+import path from "path";
 import { filterFormats, parseDuration } from "../utils/youtube.utils.js";
 
 const YTDlpWrap = YTDlpWrapModule.default || YTDlpWrapModule;
 const ytDlpWrap = new YTDlpWrap();
 
 class DownloadingService {
+  constructor() {
+    this.cookiesPath = path.resolve("cookies.txt");
+  }
+
   async init() {
     try {
       await ytDlpWrap.getVersion();
@@ -15,8 +21,17 @@ class DownloadingService {
     }
   }
 
+  getCommonArgs() {
+    const args = ["--js-runtimes", "nodejs"];
+    if (fs.existsSync(this.cookiesPath)) {
+      args.push("--cookies", this.cookiesPath);
+    }
+    return args;
+  }
+
   async getVideoInfo(url) {
-    const metadata = await ytDlpWrap.getVideoInfo(url);
+    const args = [...this.getCommonArgs(), url, "--dump-json"];
+    const metadata = await ytDlpWrap.getVideoInfo(args);
     const { videoFormats, audioFormats } = filterFormats(
       metadata.formats || [],
     );
@@ -33,7 +48,12 @@ class DownloadingService {
   }
 
   getDownloadStream(url, format, quality) {
-    let ytdlpArgs = ["--ffmpeg-location", ffmpeg, "--no-playlist"];
+    let ytdlpArgs = [
+      ...this.getCommonArgs(),
+      "--ffmpeg-location",
+      ffmpeg,
+      "--no-playlist",
+    ];
     let ext = "mp4";
     let mimeType = "video/mp4";
 

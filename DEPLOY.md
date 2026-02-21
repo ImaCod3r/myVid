@@ -114,6 +114,16 @@ sudo certbot --nginx -d meudominio.com -d www.meudominio.com
 
 Siga as instruções na tela e escolha a opção de **Redirecionar HTTP para HTTPS**.
 
+## 🍪 6. Contornando Detecção de Bot (Cookies)
+
+Muitas vezes, o YouTube bloqueia IPs de VPS exigindo login. Para resolver isso:
+
+1. Instale a extensão **"Get cookies.txt LOCALLY"** (Chrome/Edge).
+2. Vá ao YouTube no seu navegador e faça login.
+3. Use a extensão para exportar os cookies no formato **Netscape**.
+4. Salve o arquivo como `cookies.txt` na raiz do seu projeto na VPS.
+5. Reinicie o app: `pm2 restart myvid`.
+
 ---
 
 ## 🛠️ Manutenção Útil
