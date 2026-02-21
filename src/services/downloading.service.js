@@ -1,7 +1,8 @@
 import YTDlpWrapModule from "yt-dlp-wrap";
-import ffmpeg from "ffmpeg-static";
+import ffmpegStatic from "ffmpeg-static";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import { filterFormats, parseDuration } from "../utils/youtube.utils.js";
 
 const YTDlpWrap = YTDlpWrapModule.default || YTDlpWrapModule;
@@ -10,6 +11,20 @@ const ytDlpWrap = new YTDlpWrap();
 class DownloadingService {
   constructor() {
     this.cookiesPath = path.resolve("cookies.txt");
+    this.ffmpegPath = this.resolveFfmpegPath();
+  }
+
+  resolveFfmpegPath() {
+    try {
+      // Tenta usar o ffmpeg do sistema primeiro (mais estável em VPS Linux)
+      execSync("ffmpeg -version", { stdio: "ignore" });
+      console.log("🛠️ Usando FFmpeg do sistema");
+      return "ffmpeg";
+    } catch (e) {
+      // Fallback para o binário estático do pacote
+      console.log("📦 Usando FFmpeg estático");
+      return ffmpegStatic;
+    }
   }
 
   async init() {
@@ -52,7 +67,7 @@ class DownloadingService {
     let ytdlpArgs = [
       ...this.getCommonArgs(),
       "--ffmpeg-location",
-      ffmpeg,
+      this.ffmpegPath,
       "--no-playlist",
     ];
     let ext = "mp4";
