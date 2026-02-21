@@ -18,9 +18,12 @@ class DownloadController {
 
   download(req, res) {
     const url = req.query.url || req.body.url;
-    const format = req.query.format || req.body.format;
-    const quality = req.query.quality || req.body.quality;
-    if (!url) return res.status(400).json({ error: "URL faltando." });
+    const format = req.query.format || req.body.format || "video";
+    const quality = req.query.quality || req.body.quality || "720";
+
+    if (!url || !url.startsWith("http")) {
+      return res.status(400).json({ error: "URL inválida ou faltando." });
+    }
 
     try {
       const { downloadStream, filename, mimeType } =
