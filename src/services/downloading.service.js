@@ -74,7 +74,7 @@ class DownloadingService {
     let mimeType = "video/mp4";
 
     if (format === "audio") {
-      // Forçamos a conversão para MP3 real para garantir compatibilidade
+      // Forçamos a conversão para MP3 real para garantir compatibilidade universal
       ytdlpArgs.push(
         "-f",
         "bestaudio/best",
@@ -91,12 +91,15 @@ class DownloadingService {
       mimeType = "audio/mpeg";
     } else {
       const height = parseInt(quality, 10) || 720;
+      // Forçamos H.264 (avc1) e AAC (mp4a) que são os codecs mais compatíveis com Windows/Mac
       ytdlpArgs.push(
         "-f",
-        `bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${height}][ext=mp4]/best`,
+        `bestvideo[vcodec^=avc1][height<=${height}]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1][height<=${height}]/best`,
         "--merge-output-format",
         "mp4",
-        // Removemos movflags experimentais que podem corromper o header em alguns players
+        // Parâmetros cruciais para permitir o streaming de MP4 via pipe (stdout)
+        "--postprocessor-args",
+        "ffmpeg:-movflags frag_keyframe+empty_moov+default_base_moof",
         "-o",
         "-",
         url,
