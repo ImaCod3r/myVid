@@ -22,7 +22,7 @@ class DownloadingService {
   }
 
   getCommonArgs() {
-    const args = ["--js-runtimes", "nodejs"];
+    const args = ["--js-runtimes", "node"];
     if (fs.existsSync(this.cookiesPath)) {
       args.push("--cookies", this.cookiesPath);
     }
@@ -30,7 +30,8 @@ class DownloadingService {
   }
 
   async getVideoInfo(url) {
-    const args = [...this.getCommonArgs(), url, "--dump-json"];
+    // Passamos os argumentos como array para ter controle total
+    const args = [...this.getCommonArgs(), url, "--dump-json", "--no-playlist"];
     const metadata = await ytDlpWrap.getVideoInfo(args);
     const { videoFormats, audioFormats } = filterFormats(
       metadata.formats || [],
