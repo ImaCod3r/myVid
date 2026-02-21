@@ -74,18 +74,29 @@ class DownloadingService {
     let mimeType = "video/mp4";
 
     if (format === "audio") {
-      ytdlpArgs.push("-f", "bestaudio/best", "-o", "-", url);
-      ext = "m4a";
-      mimeType = "audio/mp4";
+      // Forçamos a conversão para MP3 real para garantir compatibilidade
+      ytdlpArgs.push(
+        "-f",
+        "bestaudio/best",
+        "--extract-audio",
+        "--audio-format",
+        "mp3",
+        "--audio-quality",
+        "0",
+        "-o",
+        "-",
+        url,
+      );
+      ext = "mp3";
+      mimeType = "audio/mpeg";
     } else {
       const height = parseInt(quality, 10) || 720;
       ytdlpArgs.push(
         "-f",
-        `bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${height}]`,
+        `bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${height}][ext=mp4]/best`,
         "--merge-output-format",
         "mp4",
-        "--postprocessor-args",
-        `ffmpeg:-movflags frag_keyframe+empty_moov+default_base_moof`,
+        // Removemos movflags experimentais que podem corromper o header em alguns players
         "-o",
         "-",
         url,
