@@ -1,0 +1,17 @@
+{
+  "name": "myVid — YouTube Downloader",
+  "short_name": "myVid",
+  "description": "Baixe vídeos e áudios do YouTube de forma rápida e gratuita.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#ff3b3b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,6 +1,3 @@
-// public/app.js — ES Module
-// Lógica do frontend do myVid
-
 // ─── Elementos do DOM ─────────────────────────────────────────────────────────
 const infoForm = document.getElementById("info-form");
 const urlInput = document.getElementById("url-input");
@@ -21,7 +18,7 @@ const errorBanner = document.getElementById("error-banner");
 const errorText = document.getElementById("error-text");
 
 // ─── Estado ───────────────────────────────────────────────────────────────────
-let currentInfo = null; // dados retornados por /api/info
+let currentInfo = null;
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 
@@ -242,11 +239,45 @@ downloadBtn.addEventListener("click", async () => {
 
 document.addEventListener("paste", (e) => {
   const active = document.activeElement;
-  // Só cola no input de URL se outro campo não estiver focado
   if (active === urlInput) return;
   const text = e.clipboardData?.getData("text") || "";
   if (text.startsWith("http")) {
     urlInput.value = text;
     urlInput.focus();
   }
+});
+
+// ─── PWA Installation ────────────────────────────────────────────────────────
+let deferredPrompt;
+const pwaPopup = document.getElementById("pwa-popup");
+const pwaInstallBtn = document.getElementById("pwa-install-btn");
+const pwaCloseBtn = document.getElementById("pwa-close-btn");
+
+// Register Service Worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(console.error);
+}
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  pwaPopup.classList.remove("hidden");
+});
+
+pwaInstallBtn.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log(`User response to the install prompt: ${outcome}`);
+  deferredPrompt = null;
+  pwaPopup.classList.add("hidden");
+});
+
+pwaCloseBtn.addEventListener("click", () => {
+  pwaPopup.classList.add("hidden");
+});
+
+window.addEventListener("appinstalled", () => {
+  console.log("PWA installed");
+  pwaPopup.classList.add("hidden");
 });

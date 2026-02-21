@@ -13,6 +13,7 @@ O myVid é uma ferramenta moderna e poderosa para baixar vídeos e áudios do Yo
 - [🛠️ Tecnologias](#️-tecnologias)
 - [📡 Documentação da API](#-documentação-da-api)
 - [💻 Como Rodar](#-como-rodar)
+- [🌐 Self-Hosting (Hospedagem)](#-self-hosting-hospedagem)
 - [✨ Possíveis Melhorias](#-possíveis-melhorias)
 - [🤝 Contribuição](#-contribuição)
 
@@ -128,6 +129,21 @@ window.open(`/api/download?${params.toString()}`, "_blank");
   npm start
   ```
   O servidor estará rodando em `http://localhost:3000`.
+
+---
+
+## 🌐 Self-Hosting (Hospedagem)
+
+Se você deseja hospedar o **myVid** em seu próprio servidor (VPS Ubuntu, AWS, DigitalOcean, etc.) com um domínio personalizado e SSL (HTTPS), preparamos um guia detalhado no arquivo:
+
+👉 **[Guia de Implantação (DEPLOY.md)](./DEPLOY.md)**
+
+Neste guia você encontrará instruções sobre:
+
+- Instalação de dependências no Ubuntu.
+- Configuração do **PM2** para manter o app online.
+- Configuração do **Nginx** como Proxy Reverso.
+- Ativação de SSL gratuito com **Certbot**.
 
 ---
 

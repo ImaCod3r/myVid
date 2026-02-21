@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>myVid — YouTube Downloader</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
   <meta name="description" content="Baixe vídeos e áudios do YouTube de forma rápida e gratuita com o myVid." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -419,6 +420,29 @@
       </a>
     </div>
   </footer>
+
+  <!-- PWA Install Popup -->
+  <div id="pwa-popup" class="fixed bottom-6 right-6 z-[100] hidden">
+    <div class="glass p-5 rounded-2xl shadow-2xl border border-brand-500/20 max-w-[300px] animate-fade-up">
+      <div class="flex items-start gap-4 mb-4">
+        <div class="w-12 h-12 rounded-xl btn-primary flex items-center justify-center shrink-0 shadow-lg">
+          <ion-icon name="download" class="text-2xl text-white"></ion-icon>
+        </div>
+        <div>
+          <h3 class="font-bold text-zinc-100 text-sm">Instalar myVid</h3>
+          <p class="text-zinc-500 text-xs mt-1">Adicione este app à sua tela inicial para acesso rápido.</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="pwa-install-btn" class="btn-primary flex-1 py-2 rounded-lg text-xs font-bold text-white">
+          Instalar
+        </button>
+        <button id="pwa-close-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 py-2 px-4 rounded-lg text-xs font-bold transition-colors">
+          Agora não
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="/app.js"></script>
 </body>
