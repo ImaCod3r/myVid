@@ -1,5 +1,6 @@
 import app from "./src/app.js";
 import downloadingService from "./src/services/downloading.service.js";
+import "dotenv/config";
 
 const PORT = process.env.PORT || 3000;
 
